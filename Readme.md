@@ -1,7 +1,3 @@
-# Codex-Test
-
-Created this repo just to test what I can do with codex or cursor.
-
 ## Double Machine Learning Workshop Example
 
 Double Machine Learning (DML) uses modern machine learning models to control for
@@ -21,6 +17,7 @@ python double_ml_example.py
 It simulates data and estimates the average treatment effect of a treatment on
 an outcome using random forests for the nuisance functions.
 
+
 ## Ads Tactic Effectiveness Example
 
 `double_ml_ads_example.py` mimics user-level ad measurement. It estimates the
@@ -32,3 +29,4 @@ Run the script with:
 ```bash
 python double_ml_ads_example.py
 ```
+
