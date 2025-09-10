@@ -1,0 +1,5 @@
+title: "Codex-Test Blog"
+description: "A sample blog using GitHub Pages"
+theme: minima
+plugins:
+  - jekyll-feed
