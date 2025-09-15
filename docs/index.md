@@ -1,6 +1,5 @@
 ---
 layout: home
-title: Welcome to Codex-Test Blog
+title: Welcome to Pankaj's Blog
 ---
-
-This is a sample blog powered by [GitHub Pages](https://pages.github.com/) and Jekyll.
+Welcome to Pankaj's blog, where you'll find updates, insights, and stories from my journey in data science and analytics.
