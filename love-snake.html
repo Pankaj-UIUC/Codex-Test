@@ -31,7 +31,7 @@ permalink: /love-snake/
   <div class="game-wrapper">
     <canvas id="gameCanvas" role="img" aria-label="Custom snake game built for you" tabindex="0"></canvas>
     <div class="hud" aria-live="polite">
-      <p id="statusMessage">Use the arrow keys or WASD to guide the snake along each route once &mdash; it stays etched after you finish.</p>
+      <p id="statusMessage">Use the arrow keys or WASD to chase the glowing heart &mdash; each hidden letter appears after a single lap.</p>
       <button id="restartButton" type="button" class="restart-button">Restart the run</button>
     </div>
   </div>
@@ -269,41 +269,42 @@ permalink: /love-snake/
     const GRID_ROWS = 24;
     const TILE_SIZE = 16;
     const SPEED = 150;
+    const SHOW_GUIDE_WHILE_TRACING = false; // Letters stay hidden until their paths are completed once.
 
     canvas.width = GRID_COLS * TILE_SIZE;
     canvas.height = GRID_ROWS * TILE_SIZE;
 
     const letterInfos = [
-      { letter: 'I', startX: 2, startY: 6, commands: ['R3', 'L2', 'D9', 'L1', 'R3'] },
-      { letter: 'L', startX: 9, startY: 6, commands: ['D9', 'R3'] },
-      { letter: 'O', startX: 16, startY: 6, commands: ['R3', 'D9', 'L3', 'U9'] },
-      { letter: 'V', startX: 23, startY: 6, commands: ['D2', 'R1', 'D2', 'R1', 'D5', 'R1', 'U2', 'R1', 'U7'] },
-      { letter: 'E', startX: 30, startY: 6, commands: ['D9', 'R3', 'L3', 'U4', 'R2', 'L2', 'U5', 'R3'] },
-      { letter: 'Y', startX: 37, startY: 6, commands: ['R4', 'L2', 'D2', 'R1', 'D2', 'L1', 'U2', 'L1', 'D2', 'R1', 'D5'] },
-      { letter: 'O', startX: 44, startY: 6, commands: ['R3', 'D9', 'L3', 'U9'] },
-      { letter: 'U', startX: 51, startY: 6, commands: ['D9', 'R3', 'U9'] }
+      { letter: 'I', startX: 2, startY: 6, commands: ['R4', 'D1', 'L2', 'D7', 'L2', 'D1', 'R4'] },
+      { letter: 'L', startX: 9, startY: 6, commands: ['D9', 'R4'] },
+      { letter: 'O', startX: 16, startY: 6, commands: ['D9', 'R4', 'U9', 'L3'] },
+      { letter: 'V', startX: 23, startY: 6, commands: ['D2', 'R1', 'D2', 'R1', 'D5', 'R1', 'U5', 'R1', 'U4'] },
+      { letter: 'E', startX: 30, startY: 6, commands: ['R4', 'D1', 'L4', 'D3', 'R3', 'D1', 'L3', 'D4', 'R4'] },
+      { letter: 'Y', startX: 37, startY: 6, commands: ['R4', 'D2', 'L2', 'D1', 'L2', 'D2', 'R2', 'D4'] },
+      { letter: 'O', startX: 44, startY: 6, commands: ['D9', 'R4', 'U9', 'L3'] },
+      { letter: 'U', startX: 51, startY: 6, commands: ['D9', 'R4', 'U8', 'L2'] }
     ];
 
     const letterMessages = [
-      'Let\'s begin—trace the first route step by step.',
-      'Nice work! Line up for the next set of turns.',
-      'Stay steady as you outline the next curve.',
-      'Lean into the sharp angle coming up.',
-      'Time for a tidy sequence of short moves.',
-      'Open the track wide before coasting downward.',
-      'Almost there—trace this final loop with care.',
-      'Finish this closing curve and get ready for the finale.'
+      'Chase the first heart trail—the hidden letter will reveal itself after this lap.',
+      'Nice! Follow the next string of hearts to uncover another letter.',
+      'Keep your turns smooth; the outline appears once you complete the run.',
+      'Watch the angle of this path and keep gliding toward the glow.',
+      'A steady pace through these bends will sketch the surprise cleanly.',
+      'These hearts zig and zag—stay close to keep the letter a secret until the end.',
+      'Almost there—one more hidden outline waits for you.',
+      'Finish this final trail and let the full message shine.'
     ];
 
     const completionMessages = [
-      'The first route is locked in. Onward!',
-      'Great! That stroke now stays on the board.',
-      'Another curve complete—the pattern is taking shape.',
-      'That bold angle is set.',
-      'Each detail is holding steady.',
-      'Another sweeping path is etched in place.',
-      'Only one final route remains—almost there!',
-      'Every path is marked. Get ready for the surprise!'
+      'The first hidden letter is etched—beautiful work!',
+      'Another letter appears, locked in place.',
+      'That curve is revealed and glowing.',
+      'The bold angles of this letter now sparkle on the board.',
+      'Every bend you traced is holding steady in the light.',
+      'That zigzag is etched perfectly—onward!',
+      'Only one final letter remains to reveal.',
+      'All letters are traced. Take in the finished message!'
     ];
 
     let letters = letterInfos.map(createLetterPath);
@@ -586,7 +587,9 @@ permalink: /love-snake/
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       drawCompletedLetters();
-      drawCurrentGuide();
+      if (SHOW_GUIDE_WHILE_TRACING) {
+        drawCurrentGuide();
+      }
       drawSnake();
       drawTarget();
       drawFloatingSparkles();
