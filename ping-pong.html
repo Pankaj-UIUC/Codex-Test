@@ -1,0 +1,226 @@
+---
+layout: default
+title: Ping Pong Game
+---
+<style>
+  .game-container {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: "Segoe UI", Roboto, sans-serif;
+    color: #333;
+  }
+
+  canvas {
+    display: block;
+    margin: 1.5rem auto;
+    background: linear-gradient(180deg, #0c2340 0%, #001226 100%);
+    border: 4px solid #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
+  }
+
+  .info {
+    margin-top: 1rem;
+    line-height: 1.6;
+  }
+
+  .info strong {
+    color: #0c2340;
+  }
+</style>
+
+<div class="game-container">
+  <h1>{{ page.title }}</h1>
+  <p class="info">
+    Use the <strong>W</strong> and <strong>S</strong> keys (or the <strong>Up</strong> and <strong>Down</strong> arrow keys) to move your paddle.
+    First to reach 7 points wins the match!
+  </p>
+  <canvas id="pingPong" width="720" height="420" aria-label="Ping pong game area"></canvas>
+  <p class="info">
+    Tip: Keep an eye on the ball's speed&mdash;it gets a little faster every time you score!
+  </p>
+</div>
+
+<script>
+  (function () {
+    const canvas = document.getElementById("pingPong");
+    const ctx = canvas.getContext("2d");
+
+    const paddle = {
+      width: 14,
+      height: 90,
+      margin: 30,
+      speed: 6,
+    };
+
+    const ballBaseSpeed = 4;
+    let ballSpeed = ballBaseSpeed;
+    const ball = {
+      size: 12,
+      reset(direction = 1) {
+        this.x = canvas.width / 2;
+        this.y = canvas.height / 2;
+        const angle = (Math.random() * Math.PI) / 3 - Math.PI / 6;
+        this.vx = direction * (ballSpeed * Math.cos(angle));
+        this.vy = ballSpeed * Math.sin(angle);
+      },
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+      },
+    };
+
+    let playerY = (canvas.height - paddle.height) / 2;
+    let aiY = playerY;
+    let playerScore = 0;
+    let aiScore = 0;
+    let isRunning = true;
+
+    const keys = new Set();
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function drawCourt() {
+      ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.fillRect(canvas.width / 2 - 2, 0, 4, canvas.height);
+      for (let i = 20; i < canvas.height; i += 40) {
+        ctx.fillRect(canvas.width / 2 - 2, i, 4, 20);
+      }
+    }
+
+    function drawPaddle(x, y) {
+      ctx.fillStyle = "#f6f6f6";
+      ctx.fillRect(x, y, paddle.width, paddle.height);
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.fillStyle = "#ffcf33";
+      ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "32px 'Segoe UI', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(`${playerScore}`, canvas.width / 2 - 60, 50);
+      ctx.fillText(`${aiScore}`, canvas.width / 2 + 60, 50);
+    }
+
+    function updatePlayer() {
+      if (keys.has("ArrowUp") || keys.has("w")) {
+        playerY -= paddle.speed;
+      }
+      if (keys.has("ArrowDown") || keys.has("s")) {
+        playerY += paddle.speed;
+      }
+      playerY = clamp(playerY, 0, canvas.height - paddle.height);
+    }
+
+    function updateAI() {
+      const target = ball.y - paddle.height / 2;
+      const easing = 0.06;
+      aiY += (target - aiY) * easing;
+      aiY = clamp(aiY, 0, canvas.height - paddle.height);
+    }
+
+    function handleCollisions() {
+      if (ball.y - ball.size < 0 || ball.y + ball.size > canvas.height) {
+        ball.vy *= -1;
+      }
+
+      const playerX = paddle.margin;
+      if (
+        ball.x - ball.size < playerX + paddle.width &&
+        ball.x - ball.size > playerX &&
+        ball.y > playerY &&
+        ball.y < playerY + paddle.height
+      ) {
+        const offset = (ball.y - (playerY + paddle.height / 2)) / (paddle.height / 2);
+        const bounceAngle = offset * (Math.PI / 4);
+        const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 1.05 + 0.2;
+        ball.vx = Math.abs(Math.cos(bounceAngle) * speed);
+        ball.vy = Math.sin(bounceAngle) * speed;
+      }
+
+      const aiX = canvas.width - paddle.margin - paddle.width;
+      if (
+        ball.x + ball.size > aiX &&
+        ball.x + ball.size < aiX + paddle.width &&
+        ball.y > aiY &&
+        ball.y < aiY + paddle.height
+      ) {
+        const offset = (ball.y - (aiY + paddle.height / 2)) / (paddle.height / 2);
+        const bounceAngle = offset * (Math.PI / 4);
+        const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 1.05 + 0.2;
+        ball.vx = -Math.abs(Math.cos(bounceAngle) * speed);
+        ball.vy = Math.sin(bounceAngle) * speed;
+      }
+    }
+
+    function checkScore() {
+      if (ball.x + ball.size < 0) {
+        aiScore++;
+        ballSpeed += 0.3;
+        ball.reset(-1);
+      } else if (ball.x - ball.size > canvas.width) {
+        playerScore++;
+        ballSpeed += 0.3;
+        ball.reset(1);
+      }
+
+      if (playerScore >= 7 || aiScore >= 7) {
+        isRunning = false;
+        const winner = playerScore >= 7 ? "You win!" : "The computer wins.";
+        setTimeout(() => {
+          alert(`${winner}\nClick OK to play again.`);
+          playerScore = 0;
+          aiScore = 0;
+          ballSpeed = ballBaseSpeed;
+          isRunning = true;
+          ball.reset(Math.random() > 0.5 ? 1 : -1);
+        }, 200);
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawCourt();
+      drawPaddle(paddle.margin, playerY);
+      drawPaddle(canvas.width - paddle.margin - paddle.width, aiY);
+      drawBall();
+      drawScore();
+    }
+
+    function loop() {
+      if (isRunning) {
+        updatePlayer();
+        updateAI();
+        ball.update();
+        handleCollisions();
+        checkScore();
+      }
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function normalizeKey(key) {
+      return key.length === 1 ? key.toLowerCase() : key;
+    }
+
+    document.addEventListener("keydown", (event) => {
+      keys.add(normalizeKey(event.key));
+    });
+
+    document.addEventListener("keyup", (event) => {
+      keys.delete(normalizeKey(event.key));
+    });
+
+    ball.reset(Math.random() > 0.5 ? 1 : -1);
+    loop();
+  })();
+</script>
