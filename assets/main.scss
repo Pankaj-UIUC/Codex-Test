@@ -1,0 +1,21 @@
+---
+---
+
+@import "minima";
+
+.site-nav .linkedin-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.site-nav .linkedin-link svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.site-nav .linkedin-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
