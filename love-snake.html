@@ -1,0 +1,678 @@
+---
+layout: page
+title: Custom Snake Run
+permalink: /love-snake/
+---
+
+<div class="love-snake-page">
+  <div class="intro">
+    <h1>A Custom Snake Run</h1>
+    <p>
+      I built this twist on Snake just for you. Guide the snake with your arrow keys, follow each marked path,
+      and see what unlocks once every course is complete.
+    </p>
+  </div>
+
+  <div class="phrase-wrapper" hidden aria-hidden="true">
+    <p class="love-phrase" id="phraseDisplay" aria-live="polite">
+      <span class="phrase-letter" data-letter-index="0">I</span>
+      <span class="phrase-space">&nbsp;</span>
+      <span class="phrase-letter" data-letter-index="1">L</span>
+      <span class="phrase-letter" data-letter-index="2">O</span>
+      <span class="phrase-letter" data-letter-index="3">V</span>
+      <span class="phrase-letter" data-letter-index="4">E</span>
+      <span class="phrase-space">&nbsp;</span>
+      <span class="phrase-letter" data-letter-index="5">Y</span>
+      <span class="phrase-letter" data-letter-index="6">O</span>
+      <span class="phrase-letter" data-letter-index="7">U</span>
+    </p>
+  </div>
+
+  <div class="game-wrapper">
+    <canvas id="gameCanvas" role="img" aria-label="Custom snake game built for you" tabindex="0"></canvas>
+    <div class="hud" aria-live="polite">
+      <p id="statusMessage">Use the arrow keys or WASD to guide the snake along each route once &mdash; it stays etched after you finish.</p>
+      <button id="restartButton" type="button" class="restart-button">Restart the run</button>
+    </div>
+  </div>
+
+  <div class="celebration-message" id="celebrationMessage" aria-live="polite"></div>
+</div>
+
+<style>
+  :root {
+    color-scheme: light dark;
+  }
+
+  .love-snake-page {
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    color: #ffe5ec;
+    background: radial-gradient(circle at top left, rgba(255, 143, 171, 0.55), transparent 55%),
+                radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.45), transparent 55%),
+                linear-gradient(135deg, #1b1235, #311b5b 55%, #1b1235 100%);
+    border-radius: 1.5rem;
+    padding: 2.5rem 1.5rem 3rem;
+    box-shadow: 0 30px 60px rgba(16, 5, 35, 0.45);
+    max-width: 960px;
+    margin: 2rem auto 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .love-snake-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18), transparent 55%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.12), transparent 55%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.75;
+  }
+
+  .intro {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .intro h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 0.75rem;
+    color: #fff0f6;
+    text-shadow: 0 0 12px rgba(255, 143, 171, 0.6);
+  }
+
+  .intro p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 240, 246, 0.9);
+  }
+
+  .phrase-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(-16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+  }
+
+  .phrase-wrapper[hidden] {
+    display: none !important;
+  }
+
+  .phrase-wrapper.revealed {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .love-phrase {
+    font-size: clamp(2.4rem, 6vw, 3.2rem);
+    letter-spacing: 0.3rem;
+    display: inline-flex;
+    gap: 0.2rem;
+    font-weight: 600;
+    color: #ffc8dd;
+    transition: transform 0.4s ease;
+  }
+
+  .love-phrase.glitter {
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 0 18px rgba(255, 205, 220, 0.7), 0 0 30px rgba(255, 205, 220, 0.4);
+    animation: glitterShine 2.5s linear infinite;
+  }
+
+  .love-phrase .phrase-letter {
+    display: inline-block;
+    transition: color 0.6s ease, transform 0.6s ease;
+    color: #ffafcc;
+  }
+
+  .love-phrase .phrase-letter.active {
+    color: #ff4d6d;
+    transform: translateY(-6px);
+  }
+
+  .love-phrase .phrase-letter.completed {
+    color: rgba(255, 214, 241, 0.9);
+    text-shadow: 0 0 10px rgba(255, 214, 241, 0.7);
+  }
+
+  .phrase-space {
+    width: 0.6rem;
+  }
+
+  .game-wrapper {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 1.5rem;
+    justify-items: center;
+    margin-bottom: 2rem;
+  }
+
+  #gameCanvas {
+    width: min(100%, 720px);
+    aspect-ratio: auto;
+    background: rgba(18, 11, 38, 0.6);
+    border-radius: 1.5rem;
+    border: 2px solid rgba(255, 176, 204, 0.3);
+    box-shadow: 0 20px 45px rgba(11, 2, 24, 0.5);
+    image-rendering: crisp-edges;
+  }
+
+  .hud {
+    text-align: center;
+    max-width: 560px;
+  }
+
+  #statusMessage {
+    margin-bottom: 1rem;
+    color: rgba(255, 235, 245, 0.92);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .restart-button {
+    background: linear-gradient(135deg, #ff5d8f, #f72585);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.6rem;
+    font-size: 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(247, 37, 133, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .restart-button:hover,
+  .restart-button:focus-visible {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 20px 32px rgba(247, 37, 133, 0.45);
+    outline: none;
+  }
+
+  .celebration-message {
+    text-align: center;
+    font-size: 1.3rem;
+    color: #ffe4f7;
+    text-shadow: 0 0 14px rgba(255, 192, 203, 0.6);
+    min-height: 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  @keyframes glitterShine {
+    0% {
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.45), 0 0 30px rgba(255, 192, 203, 0.35);
+    }
+    40% {
+      text-shadow: 0 0 24px rgba(255, 255, 255, 0.8), 0 0 45px rgba(255, 192, 203, 0.6);
+    }
+    70% {
+      text-shadow: 0 0 16px rgba(255, 229, 244, 0.65), 0 0 34px rgba(255, 192, 203, 0.5);
+    }
+    100% {
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.45), 0 0 30px rgba(255, 192, 203, 0.35);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .love-snake-page {
+      padding: 2rem 1rem 2.5rem;
+    }
+
+    .love-phrase {
+      letter-spacing: 0.18rem;
+    }
+
+    #statusMessage {
+      font-size: 0.95rem;
+    }
+
+    .restart-button {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusMessage = document.getElementById('statusMessage');
+    const restartButton = document.getElementById('restartButton');
+    const phraseWrapper = document.querySelector('.phrase-wrapper');
+    const phraseDisplay = document.getElementById('phraseDisplay');
+    const celebrationMessage = document.getElementById('celebrationMessage');
+    const letterSpans = Array.from(document.querySelectorAll('.phrase-letter'));
+
+    const GRID_COLS = 60;
+    const GRID_ROWS = 24;
+    const TILE_SIZE = 16;
+    const SPEED = 150;
+
+    canvas.width = GRID_COLS * TILE_SIZE;
+    canvas.height = GRID_ROWS * TILE_SIZE;
+
+    const letterInfos = [
+      { letter: 'I', startX: 2, startY: 6, commands: ['R3', 'L2', 'D9', 'L1', 'R3'] },
+      { letter: 'L', startX: 9, startY: 6, commands: ['D9', 'R3'] },
+      { letter: 'O', startX: 16, startY: 6, commands: ['R3', 'D9', 'L3', 'U9'] },
+      { letter: 'V', startX: 23, startY: 6, commands: ['D2', 'R1', 'D2', 'R1', 'D5', 'R1', 'U2', 'R1', 'U7'] },
+      { letter: 'E', startX: 30, startY: 6, commands: ['D9', 'R3', 'L3', 'U4', 'R2', 'L2', 'U5', 'R3'] },
+      { letter: 'Y', startX: 37, startY: 6, commands: ['R4', 'L2', 'D2', 'R1', 'D2', 'L1', 'U2', 'L1', 'D2', 'R1', 'D5'] },
+      { letter: 'O', startX: 44, startY: 6, commands: ['R3', 'D9', 'L3', 'U9'] },
+      { letter: 'U', startX: 51, startY: 6, commands: ['D9', 'R3', 'U9'] }
+    ];
+
+    const letterMessages = [
+      'Let\'s begin—trace the first route step by step.',
+      'Nice work! Line up for the next set of turns.',
+      'Stay steady as you outline the next curve.',
+      'Lean into the sharp angle coming up.',
+      'Time for a tidy sequence of short moves.',
+      'Open the track wide before coasting downward.',
+      'Almost there—trace this final loop with care.',
+      'Finish this closing curve and get ready for the finale.'
+    ];
+
+    const completionMessages = [
+      'The first route is locked in. Onward!',
+      'Great! That stroke now stays on the board.',
+      'Another curve complete—the pattern is taking shape.',
+      'That bold angle is set.',
+      'Each detail is holding steady.',
+      'Another sweeping path is etched in place.',
+      'Only one final route remains—almost there!',
+      'Every path is marked. Get ready for the surprise!'
+    ];
+
+    let letters = letterInfos.map(createLetterPath);
+    let snake = [];
+    let direction = { x: 1, y: 0 };
+    let nextDirection = { x: 1, y: 0 };
+    let currentLetterIndex = 0;
+    let currentTargetIndex = 1;
+    let targetCell = null;
+    let growSegments = 0;
+    let loopId = null;
+    let isCelebrating = false;
+    const completedPaths = [];
+
+    const keyDirections = {
+      ArrowUp: { x: 0, y: -1 },
+      ArrowDown: { x: 0, y: 1 },
+      ArrowLeft: { x: -1, y: 0 },
+      ArrowRight: { x: 1, y: 0 },
+      w: { x: 0, y: -1 },
+      W: { x: 0, y: -1 },
+      s: { x: 0, y: 1 },
+      S: { x: 0, y: 1 },
+      a: { x: -1, y: 0 },
+      A: { x: -1, y: 0 },
+      d: { x: 1, y: 0 },
+      D: { x: 1, y: 0 }
+    };
+
+    window.addEventListener('keydown', (event) => {
+      const desired = keyDirections[event.key];
+      if (!desired) {
+        return;
+      }
+      event.preventDefault();
+      if (desired.x === -direction.x && desired.y === -direction.y) {
+        return;
+      }
+      nextDirection = desired;
+    });
+
+    restartButton.addEventListener('click', () => {
+      restartGame();
+    });
+
+    function createLetterPath(info) {
+      const path = [];
+      let currentX = info.startX;
+      let currentY = info.startY;
+      path.push({ x: currentX, y: currentY });
+
+      info.commands.forEach((command) => {
+        const match = command.match(/^([UDLR])(\d+)$/);
+        if (!match) {
+          return;
+        }
+        const direction = match[1];
+        const steps = parseInt(match[2], 10);
+        for (let i = 0; i < steps; i++) {
+          switch (direction) {
+            case 'U':
+              currentY -= 1;
+              break;
+            case 'D':
+              currentY += 1;
+              break;
+            case 'L':
+              currentX -= 1;
+              break;
+            case 'R':
+              currentX += 1;
+              break;
+          }
+          path.push({ x: currentX, y: currentY });
+        }
+      });
+
+      return {
+        letter: info.letter,
+        path
+      };
+    }
+
+    function startLoop() {
+      if (loopId) {
+        clearInterval(loopId);
+      }
+      loopId = setInterval(step, SPEED);
+    }
+
+    function stopLoop() {
+      if (loopId) {
+        clearInterval(loopId);
+        loopId = null;
+      }
+    }
+
+    function restartGame() {
+      completedPaths.length = 0;
+      letters = letterInfos.map(createLetterPath);
+      currentLetterIndex = 0;
+      currentTargetIndex = 1;
+      growSegments = 0;
+      isCelebrating = false;
+      celebrationMessage.textContent = '';
+      phraseDisplay.classList.remove('glitter');
+      if (phraseWrapper) {
+        phraseWrapper.hidden = true;
+        phraseWrapper.classList.remove('revealed');
+        phraseWrapper.setAttribute('aria-hidden', 'true');
+      }
+      letterSpans.forEach((span) => {
+        span.classList.remove('completed', 'active');
+      });
+      updateActiveLetter();
+      prepareLetter();
+      statusMessage.textContent = letterMessages[currentLetterIndex];
+      draw();
+      startLoop();
+    }
+
+    function prepareLetter() {
+      const letter = letters[currentLetterIndex];
+      const path = letter.path;
+      const start = path[0];
+      const second = path[1] || path[0];
+      let dx = Math.sign(second.x - start.x);
+      let dy = Math.sign(second.y - start.y);
+      if (dx === 0 && dy === 0) {
+        dx = 1;
+        dy = 0;
+      }
+      direction = { x: dx, y: dy };
+      nextDirection = { x: dx, y: dy };
+
+      const body1 = { x: start.x - direction.x, y: start.y - direction.y };
+      const body2 = { x: start.x - direction.x * 2, y: start.y - direction.y * 2 };
+
+      snake = [
+        { x: start.x, y: start.y },
+        isInsideGrid(body1) ? body1 : { x: start.x, y: start.y },
+        isInsideGrid(body2) ? body2 : { x: start.x, y: start.y }
+      ];
+
+      currentTargetIndex = 1;
+      targetCell = path[currentTargetIndex];
+      growSegments = 0;
+      updateActiveLetter();
+    }
+
+    function updateActiveLetter() {
+      letterSpans.forEach((span) => span.classList.remove('active'));
+      const activeSpan = letterSpans[currentLetterIndex];
+      if (activeSpan) {
+        activeSpan.classList.add('active');
+      }
+    }
+
+    function step() {
+      direction = { ...nextDirection };
+      const head = { ...snake[0] };
+      const newHead = { x: head.x + direction.x, y: head.y + direction.y };
+      const willGrow = Boolean(targetCell && newHead.x === targetCell.x && newHead.y === targetCell.y);
+
+      if (!isInsideGrid(newHead)) {
+        return handleFailure('The snake bumped into the night sky. Let\'s try that letter again.');
+      }
+
+      if (isCollidingWithSelf(newHead, willGrow)) {
+        return handleFailure('A gentle reset — the snake brushed over itself.');
+      }
+
+      snake.unshift(newHead);
+
+      if (willGrow) {
+        growSegments += 1;
+        advanceTarget();
+      }
+
+      if (growSegments > 0) {
+        growSegments -= 1;
+      } else {
+        snake.pop();
+      }
+
+      draw();
+    }
+
+    function advanceTarget() {
+      const letter = letters[currentLetterIndex];
+      currentTargetIndex += 1;
+      if (currentTargetIndex >= letter.path.length) {
+        completeLetter();
+      } else {
+        targetCell = letter.path[currentTargetIndex];
+      }
+    }
+
+    function completeLetter() {
+      stopLoop();
+      const letter = letters[currentLetterIndex];
+      completedPaths.push({
+        letter: letter.letter,
+        path: letter.path.slice()
+      });
+      targetCell = null;
+      const completedSpan = letterSpans[currentLetterIndex];
+      if (completedSpan) {
+        completedSpan.classList.add('completed');
+      }
+      statusMessage.textContent = completionMessages[currentLetterIndex] || 'Another path is locked in!';
+
+      if (currentLetterIndex === letters.length - 1) {
+        finishCelebration();
+        return;
+      }
+
+      currentLetterIndex += 1;
+      currentTargetIndex = 1;
+      setTimeout(() => {
+        statusMessage.textContent = letterMessages[currentLetterIndex] || statusMessage.textContent;
+        prepareLetter();
+        draw();
+        startLoop();
+      }, 650);
+    }
+
+    function finishCelebration() {
+      stopLoop();
+      isCelebrating = true;
+      updateActiveLetter();
+      if (phraseWrapper) {
+        phraseWrapper.hidden = false;
+        const revealPhrase = () => {
+          phraseWrapper.classList.add('revealed');
+          phraseWrapper.setAttribute('aria-hidden', 'false');
+        };
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(revealPhrase);
+        } else {
+          revealPhrase();
+        }
+      }
+      phraseDisplay.classList.add('glitter');
+      celebrationMessage.textContent = 'Surprise! I love you — Happy Anniversary, my love!';
+      statusMessage.textContent = 'Take it all in. Press restart to sketch the message again whenever you wish.';
+    }
+
+    function handleFailure(message) {
+      stopLoop();
+      statusMessage.textContent = message;
+      setTimeout(() => {
+        if (isCelebrating) {
+          return;
+        }
+        prepareLetter();
+        draw();
+        startLoop();
+      }, 700);
+    }
+
+    function isInsideGrid(cell) {
+      return cell.x >= 0 && cell.x < GRID_COLS && cell.y >= 0 && cell.y < GRID_ROWS;
+    }
+
+    function isCollidingWithSelf(head, willGrow) {
+      return snake.some((segment, index) => {
+        if (!willGrow && index === snake.length - 1) {
+          return false;
+        }
+        return segment.x === head.x && segment.y === head.y;
+      });
+    }
+
+    function draw() {
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, '#140a24');
+      gradient.addColorStop(1, '#1f1140');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawCompletedLetters();
+      drawSnake();
+      drawTarget();
+      drawFloatingSparkles();
+    }
+
+    function drawCompletedLetters() {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 214, 241, 0.4)';
+      completedPaths.forEach((entry) => {
+        entry.path.forEach((cell) => {
+          const { x, y } = cellToPixel(cell);
+          ctx.fillRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
+        });
+      });
+      ctx.restore();
+    }
+
+    function drawSnake() {
+      snake.forEach((segment, index) => {
+        const { x, y } = cellToPixel(segment);
+        const size = TILE_SIZE - 4;
+        const offset = 2;
+        const segmentColor = index === 0 ? '#ff4d6d' : 'rgba(255, 176, 204, 0.95)';
+        ctx.fillStyle = segmentColor;
+        ctx.fillRect(x + offset, y + offset, size, size);
+        if (index === 0) {
+          ctx.strokeStyle = 'rgba(255, 240, 246, 0.9)';
+          ctx.lineWidth = 1.6;
+          ctx.strokeRect(x + offset + 1, y + offset + 1, size - 2, size - 2);
+        }
+      });
+    }
+
+    function drawTarget() {
+      if (!targetCell || isCelebrating) {
+        return;
+      }
+      const { x, y } = cellToPixel(targetCell);
+      drawHeart(x + 3, y + 3, TILE_SIZE - 6, '#ff99c8');
+    }
+
+    function drawHeart(x, y, size, color) {
+      const topCurveHeight = size * 0.3;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + size / 2, y + size);
+      ctx.quadraticCurveTo(x + size, y + size * 0.75, x + size, y + topCurveHeight);
+      ctx.quadraticCurveTo(x + size, y, x + size / 2, y);
+      ctx.quadraticCurveTo(x, y, x, y + topCurveHeight);
+      ctx.quadraticCurveTo(x, y + size * 0.75, x + size / 2, y + size);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.shadowColor = 'rgba(255, 153, 200, 0.6)';
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    const sparklePositions = Array.from({ length: 30 }, (_, idx) => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 1.6 + 0.6,
+      speed: 0.3 + Math.random() * 0.5,
+      offset: idx * 13
+    }));
+
+    function drawFloatingSparkles() {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      sparklePositions.forEach((sparkle) => {
+        const flicker = Math.sin((Date.now() + sparkle.offset) * 0.004) * 0.4 + 0.6;
+        ctx.globalAlpha = flicker;
+        ctx.beginPath();
+        ctx.arc(sparkle.x, (sparkle.y + Date.now() * sparkle.speed * 0.01) % canvas.height, sparkle.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    function cellToPixel(cell) {
+      return {
+        x: cell.x * TILE_SIZE,
+        y: cell.y * TILE_SIZE
+      };
+    }
+
+    restartGame();
+  })();
+</script>
