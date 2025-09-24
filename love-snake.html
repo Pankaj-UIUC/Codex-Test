@@ -31,10 +31,7 @@ permalink: /love-snake/
   <div class="game-wrapper">
     <canvas id="gameCanvas" role="img" aria-label="Custom snake game built for you" tabindex="0"></canvas>
     <div class="hud" aria-live="polite">
-
-
-      <p id="statusMessage">Use the arrow keys or WASD to guide the snake along each marked route.</p>
-
+      <p id="statusMessage">Use the arrow keys or WASD to guide the snake along each route once &mdash; it stays etched after you finish.</p>
       <button id="restartButton" type="button" class="restart-button">Restart the run</button>
     </div>
   </div>
@@ -105,6 +102,10 @@ permalink: /love-snake/
     transform: translateY(-16px);
     transition: opacity 0.6s ease, transform 0.6s ease;
     pointer-events: none;
+  }
+
+  .phrase-wrapper[hidden] {
+    display: none !important;
   }
 
   .phrase-wrapper.revealed {
@@ -585,9 +586,7 @@ permalink: /love-snake/
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       drawCompletedLetters();
-
       drawCurrentGuide();
-
       drawSnake();
       drawTarget();
       drawFloatingSparkles();
@@ -595,17 +594,15 @@ permalink: /love-snake/
 
     function drawCompletedLetters() {
       ctx.save();
-      ctx.fillStyle = 'rgba(255, 214, 241, 0.22)';
+      ctx.fillStyle = 'rgba(255, 214, 241, 0.4)';
       completedPaths.forEach((entry) => {
         entry.path.forEach((cell) => {
           const { x, y } = cellToPixel(cell);
-          ctx.fillRect(x + 3, y + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+          ctx.fillRect(x + 0.5, y + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
         });
       });
       ctx.restore();
     }
-
-
 
     function drawCurrentGuide() {
       const letter = letters[currentLetterIndex];
@@ -620,8 +617,6 @@ permalink: /love-snake/
       });
       ctx.restore();
     }
-
-
     function drawSnake() {
       snake.forEach((segment, index) => {
         const { x, y } = cellToPixel(segment);
