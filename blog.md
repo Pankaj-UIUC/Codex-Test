@@ -6,6 +6,8 @@ permalink: /blog/
 
 Catch up on the latest posts from my work in data science and analytics.
 
+Connect with me on [LinkedIn](https://www.linkedin.com/in/psharma13/) for more updates and professional insights.
+
 <ul class="post-list">
   {%- for post in site.posts -%}
   <li>
