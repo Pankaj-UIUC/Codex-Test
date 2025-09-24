@@ -31,7 +31,10 @@ permalink: /love-snake/
   <div class="game-wrapper">
     <canvas id="gameCanvas" role="img" aria-label="Custom snake game built for you" tabindex="0"></canvas>
     <div class="hud" aria-live="polite">
+
+
       <p id="statusMessage">Use the arrow keys or WASD to guide the snake along each marked route.</p>
+
       <button id="restartButton" type="button" class="restart-button">Restart the run</button>
     </div>
   </div>
@@ -582,7 +585,9 @@ permalink: /love-snake/
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       drawCompletedLetters();
+
       drawCurrentGuide();
+
       drawSnake();
       drawTarget();
       drawFloatingSparkles();
@@ -600,6 +605,8 @@ permalink: /love-snake/
       ctx.restore();
     }
 
+
+
     function drawCurrentGuide() {
       const letter = letters[currentLetterIndex];
       if (!letter || isCelebrating) {
@@ -613,6 +620,7 @@ permalink: /love-snake/
       });
       ctx.restore();
     }
+
 
     function drawSnake() {
       snake.forEach((segment, index) => {
