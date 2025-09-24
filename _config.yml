@@ -5,6 +5,7 @@ future: true
 
 header_pages:
   - blog.md
+  - love-snake.html
 
 plugins:
   - jekyll-feed
